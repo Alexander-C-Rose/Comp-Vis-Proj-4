@@ -1,6 +1,6 @@
-function Per=accuracy(Truth,Result,Num);
+function Per=accuracy(Truth,Result)
 
-[X Y]=size(Truth);
+[X, Y]=size(Truth);
 
 Z=zeros(256,256);
 
