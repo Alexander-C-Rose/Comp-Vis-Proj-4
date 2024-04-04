@@ -1,0 +1,26 @@
+Gabor Filter the image with 4x4 to start (most optimal in projec 3).
+    Don't use statistics; just need the 16 dimensional column feature vector.
+    Must smooth and normalize to a new vector.
+    Try adding x and y information to the feature vector to improve accuracy.
+
+Smoothing should be a 3x3 with the center pixel being the pixel smoothed.
+    Should I use the smoothed pixels or original pixel value when smoothing the next pixel? 
+    Might try both for report purposes.
+
+Now can do multi-dimensional EM algorithm to find mu, alpha, and sigma.
+
+Find missing data in form of posterior probablility
+
+Then classify each pixel
+
+Process:
+    Use MATLAB k-means function to find most optimal result (minimum divergence)
+    Initialize EM with this result.
+
+    Try good initialization with k-mean as well as bad initialization to see effect.
+
+Plot data log-likelihood vs iteration number
+Plot segmentation accuracy vs iteration number
+
+Create a video to show progrerssion of the segmentation map during EM iteration.
+Find a few color images 
