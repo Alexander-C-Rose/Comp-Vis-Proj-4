@@ -1,4 +1,4 @@
-clear;
+ clear;
 
 mosA = double(imread("mosaicA.bmp"));
 mosB = double(imread("mosaicB.bmp"));
@@ -72,6 +72,7 @@ D = sprintf('Gabor_%i_%i.mat', nscale, norient); % String representing the filen
 save(D, "XA", "XB");
 
 %% Normalize
+
 clear;
 load("Gabor_4_4.mat");
 % the max function returns the maximum value in a column of a matrix. Since
@@ -107,10 +108,11 @@ save(D, "xA", "xB");
 
 
 %% K-means
+
 clear;
 load("Normalized.mat");
-iterations = 15;
-for i = 1:iterations
+
+for i = 1:15 % run kmeans 15 times and record the relevant data
     [idx, C, sumd] = kmeans(transpose(xA), 4); % 4 textures in mosaic A
     kA{i} = idx;
     sumdA(:,i) = sumd;
@@ -132,8 +134,22 @@ sumdB = sum(sumdB);
 [bestB, best_IB] = min(sumdB);
 [worstB, worst_IB] = max(sumdB);
 
-%% display kmeans results
 
+% Accuracy calculations
+truA = double(imread("mapA.bmp"));
+truB = double(imread("mapB.bmp"));
+perA_best = accuracy(truA, KA{best_I});
+perA_worst = accuracy(truA, KA{worst_I});
+perB_best = accuracy(truB, KB{best_IB});
+perB_worst = accuracy(truB, KB{worst_IB});
+
+% save data
+save("kmeans.mat", "KA", "KB", "perA_worst", "perA_best", "perB_worst", ...
+    "perB_best", "best_I", "best_IB", "worst_I", "worst_IB");
+
+%% display kmeans results
+clear;
+load("kmeans.mat");
 % Display A results
 figure(Color="White");
 for i = 1:15
@@ -161,15 +177,3 @@ for i = 1:15
         title("result");
     end
 end
-
-% Accuracy calculations
-truA = double(imread("mapA.bmp"));
-truB = double(imread("mapB.bmp"));
-perA_best = accuracy(truA, KA{best_I});
-perA_worst = accuracy(truA, KA{worst_I});
-perB_best = accuracy(truB, KB{best_IB});
-perB_worst = accuracy(truB, KB{worst_IB});
-
-save("kmeans_final.mat", "KA", "KB", "perA_worst", "perA_best", "perB_worst", ...
-    "perB_best");
-
