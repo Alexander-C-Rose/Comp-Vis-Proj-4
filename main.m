@@ -21,16 +21,24 @@ B = gaborconvolve(mosB, nscale, norient, minWaveLength, mult, ...
 [rA, sA] = size(mosA);
 [rB, sB] = size(mosB);
 
+% Smooth images
+for i = 1:norient
+    for j = 1:nscale
+        A{i,j} = imgaussfilt(abs(A{i,j}), 2, 'FilterSize',3, 'Padding', 'symmetric');
+        B{i,j} = imgaussfilt(abs(B{i,j}), 2, 'FilterSize',3, 'Padding', 'symmetric');
+    end
+end
+
 % Create feature Vectors for each image pixel
 XA = [];
 
 for i = 1:rA
     for j = 1:sA
-        tempA = [];
+        tempA = [i;j]; % start with only the x-y coordinates
         for k = 1:nscale
             for l = 1:norient
-                MagA = abs(A{k,l});
-                tempA = [tempA; MagA(i,j)];
+                MagA = A{k,l};
+                tempA = [tempA; MagA(i,j)]; % create rest of feature vector
             end
         end
         if ((i == j) && (j == 1))
@@ -44,10 +52,10 @@ end
 XB = [];
 for i = 1:rB
     for j = 1:sB
-        tempB = [];
+        tempB = [i;j]; % start with only the x-y coordinates
         for k = 1:nscale
             for l = 1:norient
-                MagB = abs(B{k,l});
+                MagB = B{k,l};
                 tempB = [tempB; MagB(i,j)];
             end
         end
@@ -64,6 +72,7 @@ D = sprintf('Gabor_%i_%i.mat', nscale, norient); % String representing the filen
 save(D, "XA", "XB");
 
 %% Normalize
+clear;
 load("Gabor_4_4.mat");
 % the max function returns the maximum value in a column of a matrix. Since
 % I need the maximum of each row, I transpose A, then take the max,
@@ -96,4 +105,71 @@ end
 D = sprintf('Normalized.mat'); % String representing the filename
 save(D, "xA", "xB");
 
+
+%% K-means
+clear;
+load("Normalized.mat");
+iterations = 15;
+for i = 1:iterations
+    [idx, C, sumd] = kmeans(transpose(xA), 4); % 4 textures in mosaic A
+    kA{i} = idx;
+    sumdA(:,i) = sumd;
+    
+    [idx, C, sumd] = kmeans(transpose(xB), 3); % 3 textures in mosaic B
+    kB{i} = idx;
+    sumdB(:,i) = sumd;
+
+    KA{i} = transpose(reshape(kA{i}, [256,256]));
+    KB{i} = transpose(reshape(kB{i}, [256,256]));
+end
+
+% Add the cluster distances together for a given k-means 
+sumdA = sum(sumdA);
+sumdB = sum(sumdB);
+
+[best, best_I] = min(sumdA);
+[worst, worst_I] = max(sumdA);
+[bestB, best_IB] = min(sumdB);
+[worstB, worst_IB] = max(sumdB);
+
+%% display kmeans results
+
+% Display A results
+figure(Color="White");
+for i = 1:15
+    subplot(3,5,i);
+    imshow(mat2gray(KA{i}));
+    if (i == best_I)
+        title("Best");
+    elseif(i == worst_I)
+        title("Worst");
+    else
+        title("result");
+    end
+end
+
+% display B results
+figure(Color="White");
+for i = 1:15
+    subplot(3,5,i);
+    imshow(mat2gray(KB{i}));
+    if (i == best_IB)
+        title("Best");
+    elseif(i == worst_IB)
+        title("Worst");
+    else
+        title("result");
+    end
+end
+
+% Accuracy calculations
+truA = double(imread("mapA.bmp"));
+truB = double(imread("mapB.bmp"));
+perA_best = accuracy(truA, KA{best_I});
+perA_worst = accuracy(truA, KA{worst_I});
+perB_best = accuracy(truB, KB{best_IB});
+perB_worst = accuracy(truB, KB{worst_IB});
+
+save("kmeans_final.mat", "KA", "KB", "perA_worst", "perA_best", "perB_worst", ...
+    "perB_best");
 
