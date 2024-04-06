@@ -27,11 +27,23 @@ init_B = KA{best_IB};
 for i = 1:4 % number of class labels
     temp = sum(init_A(:) == i);
     init_alpha_A(i) = temp/(rA*cA); 
-    init_mu_A(i) = (sum(gab(init_A == i)))/temp;
+    init_mu_A(i) = (sum(gab(init_A == i)))/temp;    % could maybe use centers?
     temp2 = xA - init_mu_A(i);
-    init_sigma_A(i) = (temp2*transpose(temp2))/(temp-1);
-    
-    
+    init_sigma_A{i} = (temp2*transpose(temp2))/(temp-1); % Covariance
 end
 
+
+
+% EM algorithm
+% A mosaic
+iterations = 10;
+%for i = 1:iterations
+    % E-step
+    for i = 1:4
+        % take the multivariate distribution of the observation where rows are
+        % data points and columns are the variable
+        gamma_I(:,i) = init_alpha_A(i) * mvnpdf(transpose(xA), init_mu_A(i), init_sigma_A{i});
+    end
+    gamma_I = gamma_I ./ sum(gamma_I, 2);
+%end
 
