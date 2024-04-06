@@ -113,11 +113,11 @@ clear;
 load("Normalized.mat");
 
 for i = 1:15 % run kmeans 15 times and record the relevant data
-    [idx, C, sumd] = kmeans(transpose(xA), 4); % 4 textures in mosaic A
+    [idx, CA, sumd] = kmeans(transpose(xA), 4); % 4 textures in mosaic A
     kA{i} = idx;
     sumdA(:,i) = sumd;
     
-    [idx, C, sumd] = kmeans(transpose(xB), 3); % 3 textures in mosaic B
+    [idx, CB, sumd] = kmeans(transpose(xB), 3); % 3 textures in mosaic B
     kB{i} = idx;
     sumdB(:,i) = sumd;
 
@@ -125,15 +125,18 @@ for i = 1:15 % run kmeans 15 times and record the relevant data
     KB{i} = transpose(reshape(kB{i}, [256,256]));
 end
 
-% Add the cluster distances together for a given k-means 
+% Add the cluster distances together for a given k-means. This is the
+% divergence calculation where column i corresponds to k{i}.
 sumdA = sum(sumdA);
 sumdB = sum(sumdB);
+
+% By labeling the best and worst, I can choose them to initialize EM and
+% compare.
 
 [best, best_I] = min(sumdA);
 [worst, worst_I] = max(sumdA);
 [bestB, best_IB] = min(sumdB);
 [worstB, worst_IB] = max(sumdB);
-
 
 % Accuracy calculations
 truA = double(imread("mapA.bmp"));
@@ -144,7 +147,7 @@ perB_best = accuracy(truB, KB{best_IB});
 perB_worst = accuracy(truB, KB{worst_IB});
 
 % save data
-save("kmeans.mat", "KA", "KB", "perA_worst", "perA_best", "perB_worst", ...
+save("kmeans.mat", "KA", "KB", "CA", "CB" ,"perA_worst", "perA_best", "perB_worst", ...
     "perB_best", "best_I", "best_IB", "worst_I", "worst_IB");
 
 %% display kmeans results
