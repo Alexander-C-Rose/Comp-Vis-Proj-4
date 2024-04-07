@@ -146,9 +146,14 @@ perA_worst = accuracy(truA, KA{worst_I});
 perB_best = accuracy(truB, KB{best_IB});
 perB_worst = accuracy(truB, KB{worst_IB});
 
+for i = 1:15
+    perA(i) = accuracy(truA, KA{i});
+    perB(i) = accuracy(truB, KB{i});
+end
+
 % save data
 save("kmeans.mat", "KA", "KB", "CA", "CB" ,"perA_worst", "perA_best", "perB_worst", ...
-    "perB_best", "best_I", "best_IB", "worst_I", "worst_IB");
+    "perB_best", "best_I", "best_IB", "worst_I", "worst_IB", "perA", "perB");
 
 %% display kmeans results
 clear;
@@ -163,7 +168,7 @@ for i = 1:15
     elseif(i == worst_I)
         title("Worst");
     else
-        title("result");
+        title(sprintf("per(%i) = %g", i, round(perA(i),4)));
     end
 end
 
@@ -177,6 +182,6 @@ for i = 1:15
     elseif(i == worst_IB)
         title("Worst");
     else
-        title("result");
+        title(sprintf("per(%i) = %g", i, round(perB(i),4)));
     end
 end
