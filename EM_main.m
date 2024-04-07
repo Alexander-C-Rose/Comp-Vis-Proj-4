@@ -74,7 +74,15 @@ for j = 1:iterations
         log_l(:,i) = alpha(i) * mvnpdf(transpose(xA), mu(i,:), sigma(:,:,i));
     end
     log_likelihood(j) = sum(log(sum(log_l)));
-
+    % reshape gamma_I data for displaying
+    count = 1;
+    [M, label] = max(transpose(gamma_I));
+    for r = 1:256
+        for c = 1:256
+            to_display(r,c,j) = label(count);
+            count = count + 1;
+        end
+    end
     % End the loop if the log_likelihood is within tolerance
     if j>1 && (abs(log_likelihood(j) - log_likelihood(j-1)) < tol)
         break;
@@ -82,4 +90,15 @@ for j = 1:iterations
 end
 
 
+% reshape gamma_I data for displaying
+count = 1;
+[M, label] = max(transpose(gamma_I));
+for i = 1:256
+    for j = 1:256
+        to_display(i,j,:) = label(count);
+        count = count + 1;
+    end
+end
 
+figure(Color="White")
+imshow(mat2gray(to_display(:,:,1)));
