@@ -9,53 +9,53 @@ truA = double(imread("mapA.bmp"));
 % see slide 4 lecture 25
 
 % kmeans initialization
-choice = 3;
-init_A = KA{choice};
-kmeans_percent = accuracy(truA, KA{choice})
-init_B = KA{best_IB};
+choice = 1;
+init_A = KB{choice};
+gabor_data = xB;
+k_per = perB(choice)
 
 [rA, cA] = size(init_A);
-[rB, cB] = size(init_B);
 
 % Find k-means label indices in similar form to gabor output
 count = 0;
-labsum = zeros(18,4);
+clusters = 3;
+
+% This is used for the mu calculation
+labsum = zeros(18,clusters);
 for r = 1:rA
     for c = 1:cA
-        for k = 1:4
+        for k = 1:clusters
             count = count + 1;
             if (init_A(r,c) == k)
-                labsum(:,k) = labsum(:,k) + xA(count);
+                labsum(:,k) = labsum(:,k) + gabor_data(count);
             end
         end
     end
 end
 
 % initialize values according to slide 4, lecture 25
-for i = 1:4 % number of class labels
+for i = 1:clusters % number of class labels
     temp = sum(init_A(:) == i);
     init_alpha_A(i) = temp/(rA*cA); 
     init_mu_A(:,i) = labsum(:,i) / temp;
-    temp2 = xA - init_mu_A(i);
+    temp2 = gabor_data - init_mu_A(i);
     init_sigma_A(:,:,i) = (temp2*transpose(temp2))/(temp-1); % Covariance
 end
 
-
-
-% EM algorithm
+%% EM algorithm
 
 % tolerance for when log-likelihood function should stop EM algorithm
-tol = 10;
+tol = 1;
 % max number of iterations to run through (prevents the 
 % program from never stopping if the tolerance isn't met
 iterations = 50; 
 for j = 1:iterations
     disp(j);
     % E-step
-    for i = 1:4
+    for i = 1:clusters
         % take the multivariate distribution of the observation where rows are
         % data points and columns are the variable
-        distribution = mvnpdf(transpose(xA), init_mu_A(i), init_sigma_A(:,:,i));
+        distribution = mvnpdf(transpose(gabor_data), init_mu_A(i), init_sigma_A(:,:,i));
         gamma_I(:,i) = init_alpha_A(i) * distribution;
     end
     gamma_I = gamma_I ./ sum(gamma_I, 2);
@@ -63,18 +63,18 @@ for j = 1:iterations
 
     % M-step
     % This term is used multiple times
-    gam_s = sum(gamma_I);
+    gam_s = sum(gamma_I) + 0.001;
     alpha = gam_s ./ (rA*cA);
-    mu = (xA * gamma_I) ./ gam_s;
+    mu = (gabor_data * gamma_I) ./ gam_s;
     
 %     % loop through clusters and calculate the new sigma parameter
 %     for i = 1:4
-%         temp = xA - init_mu_A(:,i);
+%         temp = gabor_data - init_mu_A(:,i);
 %         sigma(:,:,i) = (temp * (gamma_I(:,i) .* transpose(temp))) / gam_s(i);
 %     end
     % Loop through clusters and calculate the new sigma parameter
-    for i = 1:4
-        temp = xA - init_mu_A(:,i);
+    for i = 1:clusters
+        temp = gabor_data - init_mu_A(:,i);
         sigma(:,:,i) = (temp * (gamma_I(:,i) .* transpose(temp))) / gam_s(i);
         
         % Enforce symmetry
@@ -91,7 +91,7 @@ for j = 1:iterations
     
 
     % log-likelihood function for given iteration
-    log_out(j) = log_likelihood(transpose(xA), mu, sigma, alpha);
+    log_out(j) = log_likelihood(transpose(gabor_data), mu, sigma, alpha);
 
 
     % reshape gamma_I data for displaying
@@ -116,7 +116,7 @@ end
 %% display results
 
 figure(Color="White");
-for i = 1:j-1
-    subplot(1,j-1,i);
+for i = 1:8
+    subplot(2,4,i);
     imshow(mat2gray(to_display(:,:,i)));
 end

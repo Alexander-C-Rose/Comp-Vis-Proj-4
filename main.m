@@ -1,4 +1,4 @@
- clear;
+clear;
 
 mosA = double(imread("mosaicA.bmp"));
 mosB = double(imread("mosaicB.bmp"));
