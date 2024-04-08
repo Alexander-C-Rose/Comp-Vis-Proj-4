@@ -1,10 +1,9 @@
 function log_li = log_likelihood(data, mu, Sigma, pi)
-    [~, K] = size(mu);
-    N = size(data, 1);
+    % log likelihood function for Project 4
+    [~, K] = size(mu); % tilde ignores the first output to conserve memory
     
-    log_li = 0;
-    for k = 1:K
-        log_li = log_li + sum(log(pi(k) * mvnpdf(data, transpose(mu(:,k)), Sigma(:, :, k))));
+    for k = 1:K % for each cluster, multiply alpha against the pdf
+        temp(:,k) = pi(k) * mvnpdf(data, transpose(mu(:,k)), Sigma(:, :, k));
     end
-    log_li = log_li / N;
+    log_li = sum(log(sum(temp, 2)));
 end

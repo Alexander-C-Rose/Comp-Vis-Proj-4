@@ -45,46 +45,67 @@ end
 %% EM algorithm
 
 % tolerance for when log-likelihood function should stop EM algorithm
-tol = 1;
+tol = 10;
 % max number of iterations to run through (prevents the 
 % program from never stopping if the tolerance isn't met
 iterations = 50; 
 for j = 1:iterations
     disp(j);
+
     % E-step
     for i = 1:clusters
         % take the multivariate distribution of the observation where rows are
-        % data points and columns are the variable
+        % data points and columns are the variable. gabor_data is a group
+        % of column vectors, so it must be transposed. 
+
+        % init_mu_A must have number of columns equal to the number of
+        % columns of transpose(gabor_data) and in input to mvnpdf as a row
+        % vector. Sigma is an 18 x 18 matrix when input to mvnpdf and is
+        % the covariance matrix. 
         distribution = mvnpdf(transpose(gabor_data), init_mu_A(i), init_sigma_A(:,:,i));
         gamma_I(:,i) = init_alpha_A(i) * distribution;
     end
     gamma_I = gamma_I ./ sum(gamma_I, 2);
-    %disp(gamma_I(1:10,:));
 
     % M-step
     % This term is used multiple times
-    gam_s = sum(gamma_I) + 0.001;
+    gam_s = sum(gamma_I) + 0.000001; % adding small number to stop divide by zero
     alpha = gam_s ./ (rA*cA);
     mu = (gabor_data * gamma_I) ./ gam_s;
-    
-%     % loop through clusters and calculate the new sigma parameter
-%     for i = 1:4
-%         temp = gabor_data - init_mu_A(:,i);
-%         sigma(:,:,i) = (temp * (gamma_I(:,i) .* transpose(temp))) / gam_s(i);
-%     end
+
+    fv_sz = size(gabor_data, 1); % size of the feature vector
+    sigma = zeros(fv_sz, fv_sz, clusters); % initialize sigma
+
     % Loop through clusters and calculate the new sigma parameter
     for i = 1:clusters
-        temp = gabor_data - init_mu_A(:,i);
-        sigma(:,:,i) = (temp * (gamma_I(:,i) .* transpose(temp))) / gam_s(i);
-        
-        % Enforce symmetry
-        sigma(:,:,i) = (sigma(:,:,i) + sigma(:,:,i)') / 2;
-        
-        % Add a small positive value to the diagonal for regularization
-        sigma(:,:,i) = sigma(:,:,i) + 1e-6 * eye(size(sigma(:,:,i)));
+        temp = gabor_data - mu(:,i);
+        % multiply each vector (column vectors) by its probability
+        % multiply this result by the transpose
+        sigma(:,:,i) = ((transpose(gamma_I(:,i)) .* temp) * transpose(temp))/ gam_s(i);
     end
+    % loop through clusters and calculate the new sigma parameter
+%     count = 0;
+%     for i = 1:clusters
+%         temp = gabor_data - init_mu_A(:,i);
+%         for datapoint = 1:(rA*cA)
+%             count = count+1
+%             sigma(:,:,i) = sigma(:,:,i) + ((gamma_I(datapoint, i) ...
+%                 .* (temp*transpose(temp))) / gam_s(i));
+%         end
+%     end
+    % Loop through clusters and calculate the new sigma parameter
+%     for i = 1:clusters
+%         temp = gabor_data - mu(:,i);
+%         sigma(:,:,i) = (temp * (gamma_I(:,i) .* transpose(temp))) / gam_s(i);
+%         
+%         % Enforce symmetry
+%         sigma(:,:,i) = (sigma(:,:,i) + sigma(:,:,i)') / 2;
+%         
+%         % Add a small positive value to the diagonal for regularization
+%         sigma(:,:,i) = sigma(:,:,i) + 1e-6 * eye(size(sigma(:,:,i)));
+%     end
 
-    
+    % update parameters
     init_sigma_A = sigma;
     init_mu_A = mu;
     init_alpha_A = alpha;
