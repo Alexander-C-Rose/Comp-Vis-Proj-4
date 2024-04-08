@@ -3,13 +3,14 @@ clear;
 load("kmeans.mat"); % K-means results
 load("Normalized.mat"); % Gabor results post normalization and smoothing
 truA = double(imread("mapA.bmp"));
+truB = double(imread("mapB.bmp"));
 
 % calculate alpha
 % from k-means, what are the odds that a sample belongs to a given label?
 % see slide 4 lecture 25
 
 % kmeans initialization
-choice = 1;
+choice = 11;
 init_A = KB{choice};
 gabor_data = xB;
 k_per = perB(choice)
@@ -45,7 +46,7 @@ end
 %% EM algorithm
 
 % tolerance for when log-likelihood function should stop EM algorithm
-tol = 100;
+tol = 0.001;
 % max number of iterations to run through (prevents the 
 % program from never stopping if the tolerance isn't met
 iterations = 50; 
@@ -102,11 +103,6 @@ for j = 1:iterations
     init_sigma_A = sigma;
     init_mu_A = mu;
     init_alpha_A = alpha;
-    
-
-    % log-likelihood function for given iteration
-    log_out(j) = log_likelihood(transpose(gabor_data), mu, sigma, alpha);
-
 
     % reshape gamma_I data for displaying
     count = 1;
@@ -117,9 +113,12 @@ for j = 1:iterations
             count = count + 1;
         end
     end
-
-    percent(j) = accuracy(truA, to_display(:,:,j))
     
+    % log-likelihood function for given iteration
+    log_out(j) = log_likelihood(transpose(gabor_data), mu, sigma, alpha);
+    
+    % accuracy function for this iteration
+    percent(j) = accuracy(truB, to_display(:,:,j));
 
     % End the loop if the log_likelihood is within tolerance
     final_iter = j;
@@ -131,8 +130,21 @@ end
 
 %% display results
 
-figure(Color="White");
+% figure for video writing
+figure(Color="White", Position=get(0,'ScreenSize'));
 for i = 1:final_iter -1
-    subplot(2,4,i);
+    %plot the output of EM
+    subplot(2, 3, 2);
     imshow(mat2gray(to_display(:,:,i)));
+    title("Output from EM");
+    % Plot log-likelihood
+    subplot(2,3,4);
+    plot(1:i, log_out(1:i));
+    title("Log-likelihood vs iteration");
+    % Plot accuracy
+    subplot(2,3,6);
+    plot(1:i, percent(1:i));
+    title("Accuracy vs iteration");
+    drawnow;
+    pause(.25);
 end
