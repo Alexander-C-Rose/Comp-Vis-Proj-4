@@ -37,15 +37,15 @@ end
 for i = 1:clusters % number of class labels
     temp = sum(init_A(:) == i);
     init_alpha_A(i) = temp/(rA*cA); 
-    init_mu_A(:,i) = labsum(:,i) / temp;
-    temp2 = gabor_data - init_mu_A(i);
+    init_mu_A(:,i) = transpose(CB(i,:));
+    temp2 = gabor_data - init_mu_A(:,i);
     init_sigma_A(:,:,i) = (temp2*transpose(temp2))/(temp-1); % Covariance
 end
 
 %% EM algorithm
 
 % tolerance for when log-likelihood function should stop EM algorithm
-tol = 10;
+tol = 100;
 % max number of iterations to run through (prevents the 
 % program from never stopping if the tolerance isn't met
 iterations = 50; 
@@ -62,10 +62,11 @@ for j = 1:iterations
         % columns of transpose(gabor_data) and in input to mvnpdf as a row
         % vector. Sigma is an 18 x 18 matrix when input to mvnpdf and is
         % the covariance matrix. 
-        distribution = mvnpdf(transpose(gabor_data), init_mu_A(i), init_sigma_A(:,:,i));
+        distribution = mvnpdf(transpose(gabor_data), transpose(init_mu_A(:,i)), init_sigma_A(:,:,i));
         gamma_I(:,i) = init_alpha_A(i) * distribution;
     end
-    gamma_I = gamma_I ./ sum(gamma_I, 2);
+    gam_sum = sum(gamma_I, 2);
+    gamma_I = gamma_I ./ gam_sum;
 
     % M-step
     % This term is used multiple times
@@ -78,25 +79,17 @@ for j = 1:iterations
 
     % Loop through clusters and calculate the new sigma parameter
     for i = 1:clusters
-        temp = gabor_data - mu(:,i);
+        temp = gabor_data - init_mu_A(:,i);
         % multiply each vector (column vectors) by its probability
         % multiply this result by the transpose
         sigma(:,:,i) = ((transpose(gamma_I(:,i)) .* temp) * transpose(temp))/ gam_s(i);
     end
-    % loop through clusters and calculate the new sigma parameter
-%     count = 0;
-%     for i = 1:clusters
-%         temp = gabor_data - init_mu_A(:,i);
-%         for datapoint = 1:(rA*cA)
-%             count = count+1
-%             sigma(:,:,i) = sigma(:,:,i) + ((gamma_I(datapoint, i) ...
-%                 .* (temp*transpose(temp))) / gam_s(i));
-%         end
-%     end
     % Loop through clusters and calculate the new sigma parameter
 %     for i = 1:clusters
-%         temp = gabor_data - mu(:,i);
-%         sigma(:,:,i) = (temp * (gamma_I(:,i) .* transpose(temp))) / gam_s(i);
+%         temp = gabor_data - init_mu_A(:,i);
+%         % multiply each vector (column vectors) by its probability
+%         % multiply this result by the transpose
+%         sigma(:,:,i) = ((transpose(gamma_I(:,i)) .* temp) * transpose(temp))/ gam_s(i);
 %         
 %         % Enforce symmetry
 %         sigma(:,:,i) = (sigma(:,:,i) + sigma(:,:,i)') / 2;
@@ -125,9 +118,11 @@ for j = 1:iterations
         end
     end
 
-    percent = accuracy(truA, to_display(:,:,j))
+    percent(j) = accuracy(truA, to_display(:,:,j))
+    
 
     % End the loop if the log_likelihood is within tolerance
+    final_iter = j;
     if j>1 && (abs(log_out(j) - log_out(j-1)) < tol)
         break;
     end
@@ -137,7 +132,7 @@ end
 %% display results
 
 figure(Color="White");
-for i = 1:8
+for i = 1:final_iter -1
     subplot(2,4,i);
     imshow(mat2gray(to_display(:,:,i)));
 end
