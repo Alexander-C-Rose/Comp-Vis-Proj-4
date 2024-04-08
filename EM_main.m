@@ -85,19 +85,6 @@ for j = 1:iterations
         % multiply this result by the transpose
         sigma(:,:,i) = ((transpose(gamma_I(:,i)) .* temp) * transpose(temp))/ gam_s(i);
     end
-    % Loop through clusters and calculate the new sigma parameter
-%     for i = 1:clusters
-%         temp = gabor_data - init_mu_A(:,i);
-%         % multiply each vector (column vectors) by its probability
-%         % multiply this result by the transpose
-%         sigma(:,:,i) = ((transpose(gamma_I(:,i)) .* temp) * transpose(temp))/ gam_s(i);
-%         
-%         % Enforce symmetry
-%         sigma(:,:,i) = (sigma(:,:,i) + sigma(:,:,i)') / 2;
-%         
-%         % Add a small positive value to the diagonal for regularization
-%         sigma(:,:,i) = sigma(:,:,i) + 1e-6 * eye(size(sigma(:,:,i)));
-%     end
 
     % update parameters
     init_sigma_A = sigma;
