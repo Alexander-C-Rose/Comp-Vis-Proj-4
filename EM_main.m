@@ -10,16 +10,16 @@ truB = double(imread("mapB.bmp"));
 % see slide 4 lecture 25
 
 % kmeans initialization
-choice = 11;
-init_A = KB{choice};
-gabor_data = xB;
+choice = worst_I;
+init_A = KA{choice};
+gabor_data = xA;
 k_per = perB(choice)
 
 [rA, cA] = size(init_A);
 
 % Find k-means label indices in similar form to gabor output
 count = 0;
-clusters = 3;
+clusters = 4;
 
 % This is used for the mu calculation
 labsum = zeros(18,clusters);
@@ -38,7 +38,7 @@ end
 for i = 1:clusters % number of class labels
     temp = sum(init_A(:) == i);
     init_alpha_A(i) = temp/(rA*cA); 
-    init_mu_A(:,i) = transpose(CB(i,:));
+    init_mu_A(:,i) = transpose(CA(i,:));
     temp2 = gabor_data - init_mu_A(:,i);
     init_sigma_A(:,:,i) = (temp2*transpose(temp2))/(temp-1); % Covariance
 end
@@ -46,7 +46,7 @@ end
 %% EM algorithm
 
 % tolerance for when log-likelihood function should stop EM algorithm
-tol = 0.001;
+tol = 0.01;
 % max number of iterations to run through (prevents the 
 % program from never stopping if the tolerance isn't met
 iterations = 50; 
@@ -118,7 +118,7 @@ for j = 1:iterations
     log_out(j) = log_likelihood(transpose(gabor_data), mu, sigma, alpha);
     
     % accuracy function for this iteration
-    percent(j) = accuracy(truB, to_display(:,:,j));
+    percent(j) = accuracy(truA, to_display(:,:,j));
 
     % End the loop if the log_likelihood is within tolerance
     final_iter = j;
@@ -130,8 +130,12 @@ end
 
 %% display results
 
+vidObj = VideoWriter('mosaicA.avi'); % Prepare the new file.
+vidObj.FrameRate = 5;
+open(vidObj); % Create an animation.
+
 % figure for video writing
-figure(Color="White", Position=get(0,'ScreenSize'));
+toVid = figure(Color="White", Position=get(0,'ScreenSize'));
 for i = 1:final_iter -1
     %plot the output of EM
     subplot(2, 3, 2);
@@ -146,5 +150,10 @@ for i = 1:final_iter -1
     plot(1:i, percent(1:i));
     title("Accuracy vs iteration");
     drawnow;
-    pause(.25);
+    %pause(.1);
+
+    % Draw the videoframe
+    currFrame = getframe(toVid);
+    writeVideo(vidObj, currFrame);
 end
+close(vidObj);
