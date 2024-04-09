@@ -102,13 +102,13 @@ save(D, "xA", "xB");
 
 clear;
 load("Color_Normalized.mat");
-cluster_num = 4; % Try using 5 regions
+cluster_num = 4; % Try using 4 regions
 for i = 1:15 % run kmeans 15 times and record the relevant data
-    [idx, CA, sumd] = kmeans(transpose(xA), cluster_num);
+    [idx, CA{i}, sumd] = kmeans(transpose(xA), cluster_num);
     kA{i} = idx;
     sumdA(:,i) = sumd;
     
-    [idx, CB, sumd] = kmeans(transpose(xB), cluster_num);
+    [idx, CB{i}, sumd] = kmeans(transpose(xB), cluster_num);
     kB{i} = idx;
     sumdB(:,i) = sumd;
 
@@ -127,7 +127,7 @@ save("Color_kmeans.mat", "KA", "KB", "CA", "CB" ,"sumdA", "sumdB");
 %% display kmeans results
 clear;
 load("Color_kmeans.mat");
-[~, colormap] = imread("baboon.png");
+
 % By labeling the best and worst, I can choose them to initialize EM and
 % compare.
 [best, best_I] = min(sumdA);

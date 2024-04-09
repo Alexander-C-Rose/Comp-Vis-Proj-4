@@ -10,16 +10,16 @@ truB = double(imread("mapB.bmp"));
 % see slide 4 lecture 25
 
 % kmeans initialization
-choice = worst_I;
+choice = best_I;
 init_A = KA{choice};
 gabor_data = xA;
-k_per = perB(choice)
+cluster_center = CA{choice};
+clusters = 4;
 
 [rA, cA] = size(init_A);
 
 % Find k-means label indices in similar form to gabor output
 count = 0;
-clusters = 4;
 
 % This is used for the mu calculation
 labsum = zeros(18,clusters);
@@ -38,7 +38,7 @@ end
 for i = 1:clusters % number of class labels
     temp = sum(init_A(:) == i);
     init_alpha_A(i) = temp/(rA*cA); 
-    init_mu_A(:,i) = transpose(CA(i,:));
+    init_mu_A(:,i) = transpose(cluster_center(i,:));
     temp2 = gabor_data - init_mu_A(:,i);
     init_sigma_A(:,:,i) = (temp2*transpose(temp2))/(temp-1); % Covariance
 end
@@ -117,7 +117,7 @@ end
 
 %% display results
 
-vidObj = VideoWriter('testColor.avi'); % Prepare the new file.
+vidObj = VideoWriter('MosaicABest.avi'); % Prepare the new file.
 vidObj.FrameRate = 5;
 open(vidObj); % Create an animation.
 
@@ -125,14 +125,17 @@ open(vidObj); % Create an animation.
 toVid = figure(Color="White", Position=get(0,'ScreenSize'));
 for i = 1:final_iter -1
     %plot the output of EM
-    subplot(1, 2, 1);
+    subplot(2, 3, 2);
     imshow(mat2gray(to_display(:,:,i)));
     title("Output from EM");
     % Plot log-likelihood
-    subplot(1,2,2);
+    subplot(2,3,4);
     plot(1:i, log_out(1:i));
     title("Log-likelihood vs iteration");
     % Plot accuracy
+    subplot(2,3,6);
+    plot(1:i, percent(1:i));
+    title("Accuracy vs iteration");
     drawnow;
     pause(.1);
 

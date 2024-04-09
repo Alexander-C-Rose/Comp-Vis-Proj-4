@@ -113,11 +113,11 @@ clear;
 load("Normalized.mat");
 
 for i = 1:15 % run kmeans 15 times and record the relevant data
-    [idx, CA, sumd] = kmeans(transpose(xA), 4); % 4 textures in mosaic A
+    [idx, CA{i}, sumd] = kmeans(transpose(xA), 4); % 4 textures in mosaic A
     kA{i} = idx;
     sumdA(:,i) = sumd;
     
-    [idx, CB, sumd] = kmeans(transpose(xB), 3); % 3 textures in mosaic B
+    [idx, CB{i}, sumd] = kmeans(transpose(xB), 3); % 3 textures in mosaic B
     kB{i} = idx;
     sumdB(:,i) = sumd;
 
