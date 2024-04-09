@@ -5,5 +5,6 @@ function log_li = log_likelihood(data, mu, Sigma, pi)
     for k = 1:K % for each cluster, multiply alpha against the pdf
         temp(:,k) = pi(k) * mvnpdf(data, transpose(mu(:,k)), Sigma(:, :, k));
     end
+    % Following the process of slide 6 Lecture 24, we sum, then log, then sum
     log_li = sum(log(sum(temp, 2)));
 end

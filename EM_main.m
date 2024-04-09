@@ -11,9 +11,11 @@ truB = double(imread("mapB.bmp"));
 
 % kmeans initialization
 choice = best_I;
-init_A = KA{choice};
+init_A = KA{choice}; 
 gabor_data = xA;
-cluster_center = CA{choice};
+% the center of the cluster is the average of all points in the cluster, 
+% which is simply the initial mu
+cluster_center = CA{choice}; 
 clusters = 4;
 
 [rA, cA] = size(init_A);
@@ -82,7 +84,7 @@ for j = 1:iterations
     for i = 1:clusters
         temp = gabor_data - init_mu_A(:,i);
         % multiply each vector (column vectors) by its probability
-        % multiply this result by the transpose
+        % multiply this result by the transpose. The result is 18 x 18
         sigma(:,:,i) = ((transpose(gamma_I(:,i)) .* temp) * transpose(temp))/ gam_s(i);
     end
 
