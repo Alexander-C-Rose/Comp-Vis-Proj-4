@@ -117,7 +117,7 @@ end
 
 %% display results
 
-vidObj = VideoWriter('mosaicA.avi'); % Prepare the new file.
+vidObj = VideoWriter('testColor.avi'); % Prepare the new file.
 vidObj.FrameRate = 5;
 open(vidObj); % Create an animation.
 
@@ -125,19 +125,16 @@ open(vidObj); % Create an animation.
 toVid = figure(Color="White", Position=get(0,'ScreenSize'));
 for i = 1:final_iter -1
     %plot the output of EM
-    subplot(2, 3, 2);
+    subplot(1, 2, 1);
     imshow(mat2gray(to_display(:,:,i)));
     title("Output from EM");
     % Plot log-likelihood
-    subplot(2,3,4);
+    subplot(1,2,2);
     plot(1:i, log_out(1:i));
     title("Log-likelihood vs iteration");
     % Plot accuracy
-    subplot(2,3,6);
-    plot(1:i, percent(1:i));
-    title("Accuracy vs iteration");
     drawnow;
-    %pause(.1);
+    pause(.1);
 
     % Draw the videoframe
     currFrame = getframe(toVid);

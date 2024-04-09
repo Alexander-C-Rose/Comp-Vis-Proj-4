@@ -3,7 +3,7 @@ clear;
 mosA = double(imread("mosaicA.bmp"));
 mosB = double(imread("mosaicB.bmp"));
 
-%% K-means clustering stuff
+%% Gabor stuff
 
 % Gabor 
 minWaveLength = 3;
